@@ -1,0 +1,566 @@
+<!doctype html>
+<!--
+/**
+ *  @copyright defined in chopsticks/LICENSE.txt
+ *  @author Romain Pellerin - romain@eminent.ly
+ *
+ *  Donation appreciated :)
+ *
+ *  Bitcoin Cash $BCH wallet: 1HrhBfFRFovHv8EMxsuB9EcZgamtuH3fMc
+ */
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Forks monitor powered by chopsticks.cash</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="chopsticks.cash provides a forks monitor to anyone who wants to follow the fork. It helps detecting blockchains splits and better anticipate the outcome of the fork.">
+  <meta name="keywords" content="bitcoin cash, blockchain, forks, bitcoin abc, bitcoin sv, bitcoin unlimited, bitcoin naybc, chopsticks.cash, eminently">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" ></link>
+  <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
+  <link href='https://fonts.googleapis.com/css?family=Exo:400,800,600,400italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,400italic,700italic,700' rel='stylesheet' type='text/css'>
+  <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.css" />
+  <script type="text/javascript" src="./cal-heatmap.js"></script>
+
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/cferdinandi/saferInnerHTML@1.0/dist/saferInnerHTML.polyfills.min.js"></script>
+
+  <style>
+    .btn-close, .btn-close:active, .btn-close:visited, .btn-close:focus {
+      background-color: #52a000e6 !important;
+      border-color: #52a000e6 !important;
+    }
+
+    .btn-close:hover{
+      background-position: 0 0 !important;
+      border-color: #52a000ba !important;
+    }
+
+    .modal-header {
+      background: #52a000e6 !important;
+      color: white;
+    }
+
+
+    h5 {
+      font-family: "Ubuntu, Trebuchet MS, Arial, sans-serif";
+      font-stretch: condensed;
+      font-weight: 600;
+      font-size: 24px;
+    }
+
+    h5 > span{
+      color: #7ED321;
+    }
+
+    h6 {
+       font-size: 12px;
+    }
+
+    .chain {
+      margin-top: 0px;
+      margin-bottom: -5px;
+      padding-top: 0px;
+      padding-bottom: 0px;
+    }
+
+    .notabene {
+      color: #f9f9f9;
+    }
+
+    .notabene span {
+      color: #7ED321;
+      font-weight: 500;
+    }
+
+    .notabene::before li {
+      color: #7ED321;
+    }
+
+  </style>
+</head>
+<body style="width: 100%; height:100%; background-color:black; color:white; font-family:helvetica;">
+  <!--[if lt IE 8]>
+  <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience. <strong>Cal-heatmap is not supported on your browser version</strong></p>
+  <![endif]-->
+
+  <!-- Modal -->
+  <div style="position: absolute; left: 55%; top:20%; width:100%">
+    <div id="blockModal" style="color:black;  position: relative; width: 50%; height: 50%;" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div id="blockModalHeader" class="modal-header">
+
+      </div>
+      <div id="blockModalContent" class="modal-body">
+
+      </div>
+      <div id="blockModalFooter" class="modal-footer">
+
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 55%; top:20%; width:100%">
+    <div id="donateModal" style="color:black;  position: relative; width: 50%; height: 50%;" class="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div id="blockModalHeader" class="modal-header">
+        Donate ❤️
+      </div>
+      <div id="blockModalContent" class="modal-body">
+          Send some BitcoinCash ($BCH) to our wallet to help us maintain the project: <br/><br/>
+          <ul>
+            <li><h6>cashaddr: bitcoincash:qzuw0upmzk83lupq86lc6l62znpqs3k6svtf292dql</h6></li>
+            <li><h6>legacy: 1HrhBfFRFovHv8EMxsuB9EcZgamtuH3fMc</h6></li>
+            <li><h6>copay: CZKakhbV8rtppG8nedE6ikEbJhzJmUAptK</h6></li>
+          </ul>
+      </div>
+      <div id="blockModalFooter" class="modal-footer">
+        <button id="modalButton3" class="btn btn-close" aria-hidden="true">Close</button>
+      </div>
+    </div>
+ </div>
+
+ <div class="container" style="margin-left: 30px;">
+   <table>
+     <tr>
+       <td>
+         <a href="https://chopsticks.cash"><img style="width: 200px; margin-top:20px;" src="./chopsticks-logo-black.png"/></a>
+       </td>
+       <td style="width: 275px">
+         <img style="width: 360px; margin-left:70%; margin-top:18px;" src="./ramen-logo.png"/>
+         <!--<h5 style="padding-top: 32px;">&nbsp;&nbsp;/&nbsp;&nbsp;ramen 🍜 <span>bch</span> monitor</h5>-->
+       </td>
+     </tr>
+   </table>
+
+   <ul class="notabene" style="padding-left: 15px; font-size: 11px; margin-top: 15px;  margin-left: 85px; margin-bottom: 0px;">
+     <li style="padding: 0 0; margin: 0 0;"><span>Colors</span> correspond to the ECMH signature of block's content and helps distinguish equivalent blocks regarless CTOR or NTOR ordering.</li>
+     <li>Click on any <span>block</span> to access its content and compare it against other forks.</li>
+   </ul>
+
+   <div id="chain-XBC" class="chain"><br/><br/><br/><br/> <h3 style="margin-left:50px;"> loading chains <span style="color: #7ED321">...</span> <i style="color: #7ED321" class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>  <br/><br/><br/><br/> </h3></div>
+   <div id="chain-XBS" class="chain"></div>
+   <div id="chain-XBU" class="chain"></div>
+   <div id="chain-XBN" class="chain"></div>
+
+   <div style="height:25px"></div>
+
+   <footer style="bottom: 0px; right: 0px;">
+     <br/><br/>
+     Crafted and maintained with ❤️ by <a style="color: #7ED321" href="https://eminent.ly">eminent.ly</a> 👌
+     <br/><br/>
+
+
+     <!-- This line should go where you want to put your button -->
+     <div class="money-button" style="width:100px !important"
+       data-to="qzuw0upmzk83lupq86lc6l62znpqs3k6svtf292dql"
+       data-amount="0.01"
+       data-currency="BCH"
+       data-label="Donate"
+       data-client-identifier="407fecd6d30bc57272e6bc81f8e1601e"
+       data-button-id="1540103444072"
+       data-button-data="{}"
+       data-type="tip"
+     ></div>
+    <br/>
+    <h6 style="padding-left:15px;font-size: 12px">or send $BCH to <a id="donate" style="color: #7ED321" href="#">our wallet</a></h6>
+
+
+   </footer>
+
+  <script>
+    (function() {
+
+      // common features
+
+      window.chopsticks_cals = {}
+      window.chopsticks_mins = {}
+      window.chopsticks_maxs = {}
+      window.chopsticks_blockchains = {}
+
+      window.chopsticks_parser = function(data, blockchainType,timestamp) {
+
+        if (!window.chopsticks_blockchains[blockchainType]){
+          window.chopsticks_blockchains[blockchainType] = {}
+          window.chopsticks_blockchains[blockchainType][timestamp] = data
+          window.chopsticks_blockchains[blockchainType]["height"]=0
+        }
+
+      	var stats = {};
+        //data = data.blocks[blockchainType]
+      	for (var d in data) {
+          if (window.chopsticks_blockchains[blockchainType]["height"] < data[d].height){
+
+            window.chopsticks_blockchains[blockchainType]["height"] = data[d].height
+            window.chopsticks_blockchains[blockchainType]["ecmh_simple_value"] = data[d].ecmh_simple_value
+            window.chopsticks_blockchains[blockchainType]["timestamp"] = data[d].timestamp
+            window.chopsticks_blockchains[blockchainType]["transactions_nb"] = data[d].transactions_nb
+
+            var app = document.querySelector('#'+blockchainType+"-lastblock");
+
+            var template =
+              '<ul style="font-size: 12px">' +
+                '<li>Height: '+  window.chopsticks_blockchains[blockchainType]["height"]+'</li>' +
+                //'<li>ECHM (short): '+  window.chopsticks_blockchains[blockchainType]["ecmh_simple_value"]+'</li>' +
+                '<li>Timestamp: '+  window.chopsticks_blockchains[blockchainType]["timestamp"]+'</li>' +
+                '<li>Transactions (nb): '+  window.chopsticks_blockchains[blockchainType]["transactions_nb"]+'</li>' +
+              '</ul>'
+
+            saferInnerHTML(app, template);
+          }
+
+          stats[data[d].timestamp] = data[d].ecmh_simple_value
+                                    /*(data[d].ecmh_color.Red +
+                                     data[d].ecmh_color.Green +
+                                     data[d].ecmh_color.Blue +
+                                     data[d].ecmh_color.Transparency)/4;*/
+      	}
+
+        return stats;
+      };
+
+      window.chopsticks_lookupBlock = function(blockchainType, date, value){
+        var keys = Object.keys(window.chopsticks_blockchains[blockchainType])
+        keys.pop("height")
+        keys.pop("ecmh")
+        keys.pop("timestamp")
+        keys.pop("transactions_nb")
+
+        var blocks = window.chopsticks_blockchains[blockchainType][keys[0]]
+        keys = Object.keys(blocks)
+
+
+        var block = null
+
+        for (var i=0; i<keys.length; i++){
+            if (parseInt(date) - 60 <= parseInt(keys[i]) && (blocks[keys[i]].ecmh_simple_value == value))
+                block = blocks[keys[i]]
+        }
+
+
+
+        return block
+      }
+
+      window.chopsticks_getBlock = function(blockchainType, height ){
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-block-"+height+".json?now="+(new Date).getTime(), false);
+        xhr.send(null)
+
+        if (xhr.status === 200) {
+          return JSON.parse(xhr.responseText)
+        }
+
+        return null
+      }
+
+      window.chopsticks_getBlocks = function(blockchainType, timestamp){
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-"+timestamp+".json?now="+(new Date).getTime(), false);
+        xhr.send(null)
+
+        if (xhr.status === 200) {
+          return JSON.parse(xhr.responseText)
+        }
+
+        return null
+      }
+
+
+      window.chopsticks_onCellClick = function(date, value, blockchainType, showOthers){
+
+        var dateString = date
+        date = new Date(Date.parse(date)).getTime()/1000
+
+        var block = window.chopsticks_lookupBlock(blockchainType, date, value)
+
+        if (block == null)
+          return
+
+        var top  = window.pageYOffset || document.documentElement.scrollTop,
+            left = window.pageXOffset || document.documentElement.scrollLeft;
+
+        var modalHeader = document.querySelector("#blockModalHeader");
+        var modalBody = document.querySelector("#blockModalContent");
+        var modalFooter = document.querySelector("#blockModalFooter");
+
+        var header =
+          '<p style="font-weight: 500; font-size: 18px">'+
+            " Block " + block["height"] +
+          '</p>'
+
+        var blocks = {}
+
+        blocks["XBC"] = window.chopsticks_getBlock("XBC", block["height"])
+
+        if (showOthers) {
+          blocks["XBS"] = window.chopsticks_getBlock("XBS", block["height"])
+          blocks["XBU"] = window.chopsticks_getBlock("XBU", block["height"])
+          blocks["XBN"] = window.chopsticks_getBlock("XBN", block["height"])
+        }
+
+        var body =
+          '<table>'
+
+        var keys = Object.keys(blocks)
+        for (var i=0; i<keys.length; i++){
+
+          var b = blocks[keys[i]]
+
+          if (i % 2 == 0) {
+            body +=
+            '<tr>'
+          }
+
+          body +=
+              '<td>'+
+                keys[i]+
+                '<ul style="font-size: 12px">' +
+                  '<li>Hash: '+  b["hash"]+'</li>' +
+                  '<li>ECMH: '+  b["ecmh"]+'</li>' +
+                  '<li>Timestamp: '+  b["timestamp"]+'</li>' +
+                  '<li>Transactions (nb): '+ b["transactions_nb"]+'</li>' +
+                '</ul>'+
+              '</td>'
+
+          if (i % 2 == 0){
+            body +=
+            '</tr>'
+          }
+        }
+
+        body +=
+          '</table>'
+
+        var footer =
+          '<button id="modalButton0" class="btn" aria-hidden="true">Compare</button>'+
+          '<button id="modalButton1" class="btn" aria-hidden="true">Open Explorer</button>'+
+          '<button id="modalButton2" class="btn btn-close" aria-hidden="true">Close</button>'
+
+        saferInnerHTML(modalHeader, header);
+        saferInnerHTML(modalBody, body);
+        saferInnerHTML(modalFooter, footer);
+
+        $('#blockModal').css({top: top, left: left})
+        $('#blockModal').modal('show')
+
+        $('#modalButton0').click(function(){
+           window.chopsticks_onCellClick(dateString, value, blockchainType, true)
+        })
+
+        $('#modalButton1').click(function(){
+          window.open('https://www.blocktrail.com/BCC/block/'+b["hash"], '_blank')
+        })
+
+        $('#modalButton2').click(function(){
+          $('#blockModal').modal('hide')
+        })
+
+      }
+
+      window.chopsticks_mergeData = function(json, blockchainType, json2){
+
+        var keys = Object.keys(json)
+        var values = Object.values(json)
+        var data = {}
+        var dataKeys = []
+        var map = {}
+
+        // order new data by keys
+        dataKeys = dataKeys.concat(keys).sort()
+        for (var i=0; i<dataKeys.length; i++)
+            data[dataKeys[i]] = values[i]
+
+        if (!json2)
+          json2 = window.chopsticks_cals[blockchainType].options.data
+
+        // concat it with existing ordered keys
+        if (json2){
+          var existingKeys = Object.keys(json2)
+          dataKeys = dataKeys.concat(existingKeys).sort();
+        }
+
+        // build ordered map
+        for (var i=0; i<dataKeys.length; i++){
+          if (!data[dataKeys[i]]){
+            map[dataKeys[i]]=json2[dataKeys[i]]
+          } else {
+            map[dataKeys[i]]=data[dataKeys[i]]
+          }
+        }
+        return map
+      }
+
+      window.chopsticks_backward = function(date, blockchainType) {
+
+        var dateMin = new Date(Date.parse(date))
+
+        if (dateMin.getTime()/1000 < window.chopsticks_mins[blockchainType]){
+
+          var min = window.chopsticks_mins[blockchainType] - 24*60*60
+
+          var json = window.chopsticks_getBlocks(blockchainType, min).blocks[blockchainType]
+          window.chopsticks_cals[blockchainType].options.data = window.chopsticks_mergeData(json, blockchainType)
+
+          // update data
+          window.chopsticks_cals[blockchainType].update(
+            window.chopsticks_cals[blockchainType].options.data,
+            data => window.chopsticks_parser(data, blockchainType),
+            window.chopsticks_cals[blockchainType].RESET_ALL_ON_UPDATE
+          )
+
+          window.chopsticks_mins[blockchainType] =  min
+          window.chopsticks_maxs[blockchainType] -= 24*60*60
+
+        }
+      }
+
+
+      window.chopsticks_forward = function(date, blockchainType) {
+
+        if (new Date(Date.parse(date)).getTime()/1000 > window.chopsticks_maxs[blockchainType]){
+
+          var json = window.chopsticks_getBlocks(blockchainType, window.chopsticks_maxs[blockchainType]).blocks[blockchainType]
+          window.chopsticks_cals[blockchainType].options.data = window.chopsticks_mergeData(json, blockchainType)
+
+          window.chopsticks_cals[blockchainType].update(
+            window.chopsticks_cals[blockchainType].options.data,
+            data => window.chopsticks_parser(data,blockchainType),
+            window.chopsticks_cals[blockchainType].RESET_ALL_ON_UPDATE
+          )
+
+          window.chopsticks_maxs[blockchainType] += 24*60*60
+          window.chopsticks_mins[blockchainType] += 24*60*60
+
+        }
+      }
+
+      window.chopsticks_loadChain = function(data, blockchainType, date, start){
+
+        // order data
+        data = window.chopsticks_mergeData(data, blockchainType, {})
+
+        // if view is not full (no blocks at 30mins), get previous day
+        if (parseInt(Object.keys(data)[0]) > 30*60+start){
+           var mapPreviousDay = window.chopsticks_getBlocks(blockchainType, date-24*60*60).blocks[blockchainType]
+           data = window.chopsticks_mergeData(data, blockchainType, mapPreviousDay)
+        }
+
+        return window.chopsticks_parser(data, blockchainType, date)
+      }
+
+
+      window.chopsticks_init = function(blockchainType, blockchainName){
+        var cal = new CalHeatMap();
+        var now = new Date()
+        var start = moment.utc().unix()*1000-(11*60*60*1000)
+        var today = moment.utc([now.getFullYear(), now.getMonth(), now.getDate(), 0]);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-"+(today/1000)+".json", true);
+        xhr.onload = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+
+              try{
+                window.chopsticks_cals[blockchainType].destroy()
+              }
+              catch(e){}
+
+              var display =
+              '<table>'+
+                '<tr >'+
+                  '<td style="padding-right: 20px;">'+
+                    blockchainType+'<br/>'+
+                    blockchainName+
+                  '</td>'+
+                  '<td style="padding-right: 20px;">'+
+                    '<div class="" style="padding-top: 10px; margin-right: 3px">'+
+                      '<a href="#" id="'+blockchainType+'-previous"><i class="icon icon-chevron-left"></i></a>'+
+                      '<a href="#" id="'+blockchainType+'-next"><i class="icon icon-chevron-right"></i></a>'+
+                    '</div>'+
+                    '<div id="'+blockchainType+'-heatmap"></div>'+
+                  '</td>'+
+                  '<td>'+
+                    '<br/>Last block<br/>'+
+                    '<div id="'+blockchainType+'-lastblock"></div>'+
+                  '</td>'+
+                '</tr>'+
+              '</table>'
+
+              var div = document.querySelector('#chain-'+blockchainType);
+              saferInnerHTML(div, display);
+
+              cal.init({
+                range: 12,
+                start: new Date(start),
+                data: JSON.parse(xhr.responseText).blocks[blockchainType],
+                afterLoadData: (data) =>  window.chopsticks_loadChain(data, blockchainType, today/1000, start/1000),
+                itemSelector: '#'+blockchainType+'-heatmap',
+                previousSelector: '#'+blockchainType+'-previous',
+                nextSelector: '#'+blockchainType+'-next',
+                legend: [80, 83, 86, 89, 92, 95, 98, 101, 104, 107, 110, 113, 116, 119, 122, 125, 128, 131, 134, 137, 140, 143, 146, 149, 152, 155, 158, 161, 164],
+                legendColors: {
+                		min: "#00bfff",
+                		max: "#ff8d41",
+                		base: "#404040",
+                },
+                onClick: (date, value) => window.chopsticks_onCellClick(date, value, blockchainType),
+                afterLoadPreviousDomain: (data) => window.chopsticks_backward(data, blockchainType),
+                afterLoadNextDomain: (data) => window.chopsticks_forward(data, blockchainType)
+              });
+
+              cal.removeLegend();
+            }
+          }
+        };
+
+        xhr.send(null);
+
+        window.chopsticks_cals[blockchainType] = cal
+        window.chopsticks_mins[blockchainType] = today/1000
+        window.chopsticks_maxs[blockchainType] = (today/1000)+(24*60*60)
+      }
+
+      // init blockchains panels
+     window.chopsticks_init("XBC", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>ABC')
+     window.chopsticks_init("XBS", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>SV')
+     window.chopsticks_init("XBU", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>Unlimited' )
+     window.chopsticks_init("XBN", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>NayBC')
+
+     $('#donate').click(function(){
+       $('#donateModal').modal('show')
+     })
+
+     $('#modalButton3').click(function(){
+       $('#donateModal').modal('hide')
+     })
+
+     /*setInterval(
+      function(){
+        window.chopsticks_cals["XBC"].destroy()
+        window.chopsticks_cals["XBS"].destroy()
+        window.chopsticks_cals["XBU"].destroy()
+        window.chopsticks_cals["XBN"].destroy()
+
+        window.chopsticks_init("XBC")
+        window.chopsticks_init("XBS")
+        window.chopsticks_init("XBU")
+        window.chopsticks_init("XBN")
+      },10000)*/
+
+    })();
+    </script>
+
+    <!-- This line can go anywhere -->
+    <script src="https://www.moneybutton.com/moneybutton.js"></script>
+
+  </div>
+</body>
+</html>
