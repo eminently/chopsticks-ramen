@@ -191,8 +191,10 @@
         }
 
       	var stats = {};
+        var statsKeys = [];
         //data = data.blocks[blockchainType]
       	for (var d in data) {
+
           if (window.ramen_blockchains[blockchainType]["height"] < data[d].height){
 
             window.ramen_blockchains[blockchainType]["height"] = data[d].height
@@ -213,11 +215,23 @@
             saferInnerHTML(app, template);
           }
 
-          stats[data[d].timestamp] = data[d].ecmh_simple_value
+
+          // if two blocks are in the same minute, move the second one to the next cell/minute
+          // so look for blocks in the previous minute
+          var timestamp = data[d].timestamp
+
+          if (statsKeys[statsKeys.length-1]+60 >= timestamp) {
+            timestamp += 60
+          }
+
+          // push object
+          statsKeys.push(timestamp)
+          stats[timestamp] = data[d].ecmh_simple_value
                                     /*(data[d].ecmh_color.Red +
                                      data[d].ecmh_color.Green +
                                      data[d].ecmh_color.Blue +
                                      data[d].ecmh_color.Transparency)/4;*/
+
       	}
 
         return stats;
@@ -237,11 +251,12 @@
         var block = null
 
         for (var i=0; i<keys.length; i++){
-            if (parseInt(date) - 60 <= parseInt(keys[i]) && (blocks[keys[i]].ecmh_simple_value == value))
+            if (parseInt(date) - 60 <= parseInt(keys[i])
+                && (blocks[keys[i]].ecmh_simple_value == value))
                 block = blocks[keys[i]]
         }
 
-
+        console.log("ramen_lookupBlock("+blockchainType+","+date+","+value+")="+block)
 
         return block
       }
@@ -254,7 +269,7 @@
 
         if (xhr.status === 200) {
           return JSON.parse(xhr.responseText)
-        }
+        } else console.log("ramen_getBlock("+blockchainType+","+ height+") error "+xhr.status+": "+xhr.statusText)
 
         return null
       }
@@ -274,6 +289,7 @@
 
 
       window.ramen_onCellClick = function(date, value, blockchainType, showOthers){
+        console.log("ramen_onCellClick("+date+","+value+","+blockchainType)
 
         var dateString = date
         date = new Date(Date.parse(date)).getTime()/1000
