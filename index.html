@@ -256,8 +256,6 @@
                 block = blocks[keys[i]]
         }
 
-        console.log("ramen_lookupBlock("+blockchainType+","+date+","+value+")="+block)
-
         return block
       }
 
@@ -289,8 +287,6 @@
 
 
       window.ramen_onCellClick = function(date, value, blockchainType, showOthers){
-        console.log("ramen_onCellClick("+date+","+value+","+blockchainType)
-
         var dateString = date
         date = new Date(Date.parse(date)).getTime()/1000
 
