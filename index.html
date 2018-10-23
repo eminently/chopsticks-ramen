@@ -297,7 +297,7 @@
 
         var blocks = {}
 
-        blocks[blockchainType] = window.ramen_getBlock("XBC", block["height"])
+        blocks[blockchainType] = window.ramen_getBlock(blockchainType, block["height"])
 
         if (showOthers)
           for (var i=0; i< window.ramen_BLOCKCHAINS.length; i++)
