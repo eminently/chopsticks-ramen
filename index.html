@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
 /**
- *  @copyright defined in chopsticks/LICENSE.txt
+ *  @copyright defined in chopsticks-ramen/LICENSE.txt
  *  @author Romain Pellerin - romain@eminent.ly
  *
  *  Donation appreciated :)
@@ -177,37 +177,37 @@
 
       // common features
 
-      window.chopsticks_cals = {}
-      window.chopsticks_mins = {}
-      window.chopsticks_maxs = {}
-      window.chopsticks_blockchains = {}
+      window.ramen_cals = {}
+      window.ramen_mins = {}
+      window.ramen_maxs = {}
+      window.ramen_blockchains = {}
 
-      window.chopsticks_parser = function(data, blockchainType,timestamp) {
+      window.ramen_parser = function(data, blockchainType,timestamp) {
 
-        if (!window.chopsticks_blockchains[blockchainType]){
-          window.chopsticks_blockchains[blockchainType] = {}
-          window.chopsticks_blockchains[blockchainType][timestamp] = data
-          window.chopsticks_blockchains[blockchainType]["height"]=0
+        if (!window.ramen_blockchains[blockchainType]){
+          window.ramen_blockchains[blockchainType] = {}
+          window.ramen_blockchains[blockchainType][timestamp] = data
+          window.ramen_blockchains[blockchainType]["height"]=0
         }
 
       	var stats = {};
         //data = data.blocks[blockchainType]
       	for (var d in data) {
-          if (window.chopsticks_blockchains[blockchainType]["height"] < data[d].height){
+          if (window.ramen_blockchains[blockchainType]["height"] < data[d].height){
 
-            window.chopsticks_blockchains[blockchainType]["height"] = data[d].height
-            window.chopsticks_blockchains[blockchainType]["ecmh_simple_value"] = data[d].ecmh_simple_value
-            window.chopsticks_blockchains[blockchainType]["timestamp"] = data[d].timestamp
-            window.chopsticks_blockchains[blockchainType]["transactions_nb"] = data[d].transactions_nb
+            window.ramen_blockchains[blockchainType]["height"] = data[d].height
+            window.ramen_blockchains[blockchainType]["ecmh_simple_value"] = data[d].ecmh_simple_value
+            window.ramen_blockchains[blockchainType]["timestamp"] = data[d].timestamp
+            window.ramen_blockchains[blockchainType]["transactions_nb"] = data[d].transactions_nb
 
             var app = document.querySelector('#'+blockchainType+"-lastblock");
 
             var template =
               '<ul style="font-size: 12px">' +
-                '<li>Height: '+  window.chopsticks_blockchains[blockchainType]["height"]+'</li>' +
-                //'<li>ECHM (short): '+  window.chopsticks_blockchains[blockchainType]["ecmh_simple_value"]+'</li>' +
-                '<li>Timestamp: '+  window.chopsticks_blockchains[blockchainType]["timestamp"]+'</li>' +
-                '<li>Transactions (nb): '+  window.chopsticks_blockchains[blockchainType]["transactions_nb"]+'</li>' +
+                '<li>Height: '+  window.ramen_blockchains[blockchainType]["height"]+'</li>' +
+                //'<li>ECHM (short): '+  window.ramen_blockchains[blockchainType]["ecmh_simple_value"]+'</li>' +
+                '<li>Timestamp: '+  window.ramen_blockchains[blockchainType]["timestamp"]+'</li>' +
+                '<li>Transactions (nb): '+  window.ramen_blockchains[blockchainType]["transactions_nb"]+'</li>' +
               '</ul>'
 
             saferInnerHTML(app, template);
@@ -223,14 +223,14 @@
         return stats;
       };
 
-      window.chopsticks_lookupBlock = function(blockchainType, date, value){
-        var keys = Object.keys(window.chopsticks_blockchains[blockchainType])
+      window.ramen_lookupBlock = function(blockchainType, date, value){
+        var keys = Object.keys(window.ramen_blockchains[blockchainType])
         keys.pop("height")
         keys.pop("ecmh")
         keys.pop("timestamp")
         keys.pop("transactions_nb")
 
-        var blocks = window.chopsticks_blockchains[blockchainType][keys[0]]
+        var blocks = window.ramen_blockchains[blockchainType][keys[0]]
         keys = Object.keys(blocks)
 
 
@@ -246,7 +246,7 @@
         return block
       }
 
-      window.chopsticks_getBlock = function(blockchainType, height ){
+      window.ramen_getBlock = function(blockchainType, height ){
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-block-"+height+".json?now="+(new Date).getTime(), false);
@@ -259,7 +259,7 @@
         return null
       }
 
-      window.chopsticks_getBlocks = function(blockchainType, timestamp){
+      window.ramen_getBlocks = function(blockchainType, timestamp){
 
         var xhr = new XMLHttpRequest();
         xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-"+timestamp+".json?now="+(new Date).getTime(), false);
@@ -273,12 +273,12 @@
       }
 
 
-      window.chopsticks_onCellClick = function(date, value, blockchainType, showOthers){
+      window.ramen_onCellClick = function(date, value, blockchainType, showOthers){
 
         var dateString = date
         date = new Date(Date.parse(date)).getTime()/1000
 
-        var block = window.chopsticks_lookupBlock(blockchainType, date, value)
+        var block = window.ramen_lookupBlock(blockchainType, date, value)
 
         if (block == null)
           return
@@ -297,13 +297,12 @@
 
         var blocks = {}
 
-        blocks["XBC"] = window.chopsticks_getBlock("XBC", block["height"])
+        blocks[blockchainType] = window.ramen_getBlock("XBC", block["height"])
 
-        if (showOthers) {
-          blocks["XBS"] = window.chopsticks_getBlock("XBS", block["height"])
-          blocks["XBU"] = window.chopsticks_getBlock("XBU", block["height"])
-          blocks["XBN"] = window.chopsticks_getBlock("XBN", block["height"])
-        }
+        if (showOthers)
+          for (var i=0; i< window.ramen_BLOCKCHAINS.length; i++)
+              if (window.ramen_BLOCKCHAINS[i] != blockchainType)
+                blocks[window.ramen_BLOCKCHAINS[i]] = window.ramen_getBlock(window.ramen_BLOCKCHAINS[i], block["height"])
 
         var body =
           '<table>'
@@ -351,7 +350,7 @@
         $('#blockModal').modal('show')
 
         $('#modalButton0').click(function(){
-           window.chopsticks_onCellClick(dateString, value, blockchainType, true)
+           window.ramen_onCellClick(dateString, value, blockchainType, true)
         })
 
         $('#modalButton1').click(function(){
@@ -364,7 +363,7 @@
 
       }
 
-      window.chopsticks_mergeData = function(json, blockchainType, json2){
+      window.ramen_mergeData = function(json, blockchainType, json2){
 
         var keys = Object.keys(json)
         var values = Object.values(json)
@@ -378,7 +377,7 @@
             data[dataKeys[i]] = values[i]
 
         if (!json2)
-          json2 = window.chopsticks_cals[blockchainType].options.data
+          json2 = window.ramen_cals[blockchainType].options.data
 
         // concat it with existing ordered keys
         if (json2){
@@ -397,66 +396,66 @@
         return map
       }
 
-      window.chopsticks_backward = function(date, blockchainType) {
+      window.ramen_backward = function(date, blockchainType) {
 
         var dateMin = new Date(Date.parse(date))
 
-        if (dateMin.getTime()/1000 < window.chopsticks_mins[blockchainType]){
+        if (dateMin.getTime()/1000 < window.ramen_mins[blockchainType]){
 
-          var min = window.chopsticks_mins[blockchainType] - 24*60*60
+          var min = window.ramen_mins[blockchainType] - 24*60*60
 
-          var json = window.chopsticks_getBlocks(blockchainType, min).blocks[blockchainType]
-          window.chopsticks_cals[blockchainType].options.data = window.chopsticks_mergeData(json, blockchainType)
+          var json = window.ramen_getBlocks(blockchainType, min).blocks[blockchainType]
+          window.ramen_cals[blockchainType].options.data = window.ramen_mergeData(json, blockchainType)
 
           // update data
-          window.chopsticks_cals[blockchainType].update(
-            window.chopsticks_cals[blockchainType].options.data,
-            data => window.chopsticks_parser(data, blockchainType),
-            window.chopsticks_cals[blockchainType].RESET_ALL_ON_UPDATE
+          window.ramen_cals[blockchainType].update(
+            window.ramen_cals[blockchainType].options.data,
+            data => window.ramen_parser(data, blockchainType),
+            window.ramen_cals[blockchainType].RESET_ALL_ON_UPDATE
           )
 
-          window.chopsticks_mins[blockchainType] =  min
-          window.chopsticks_maxs[blockchainType] -= 24*60*60
+          window.ramen_mins[blockchainType] =  min
+          window.ramen_maxs[blockchainType] -= 24*60*60
 
         }
       }
 
 
-      window.chopsticks_forward = function(date, blockchainType) {
+      window.ramen_forward = function(date, blockchainType) {
 
-        if (new Date(Date.parse(date)).getTime()/1000 > window.chopsticks_maxs[blockchainType]){
+        if (new Date(Date.parse(date)).getTime()/1000 > window.ramen_maxs[blockchainType]){
 
-          var json = window.chopsticks_getBlocks(blockchainType, window.chopsticks_maxs[blockchainType]).blocks[blockchainType]
-          window.chopsticks_cals[blockchainType].options.data = window.chopsticks_mergeData(json, blockchainType)
+          var json = window.ramen_getBlocks(blockchainType, window.ramen_maxs[blockchainType]).blocks[blockchainType]
+          window.ramen_cals[blockchainType].options.data = window.ramen_mergeData(json, blockchainType)
 
-          window.chopsticks_cals[blockchainType].update(
-            window.chopsticks_cals[blockchainType].options.data,
-            data => window.chopsticks_parser(data,blockchainType),
-            window.chopsticks_cals[blockchainType].RESET_ALL_ON_UPDATE
+          window.ramen_cals[blockchainType].update(
+            window.ramen_cals[blockchainType].options.data,
+            data => window.ramen_parser(data,blockchainType),
+            window.ramen_cals[blockchainType].RESET_ALL_ON_UPDATE
           )
 
-          window.chopsticks_maxs[blockchainType] += 24*60*60
-          window.chopsticks_mins[blockchainType] += 24*60*60
+          window.ramen_maxs[blockchainType] += 24*60*60
+          window.ramen_mins[blockchainType] += 24*60*60
 
         }
       }
 
-      window.chopsticks_loadChain = function(data, blockchainType, date, start){
+      window.ramen_loadChain = function(data, blockchainType, date, start){
 
         // order data
-        data = window.chopsticks_mergeData(data, blockchainType, {})
+        data = window.ramen_mergeData(data, blockchainType, {})
 
         // if view is not full (no blocks at 30mins), get previous day
         if (parseInt(Object.keys(data)[0]) > 30*60+start){
-           var mapPreviousDay = window.chopsticks_getBlocks(blockchainType, date-24*60*60).blocks[blockchainType]
-           data = window.chopsticks_mergeData(data, blockchainType, mapPreviousDay)
+           var mapPreviousDay = window.ramen_getBlocks(blockchainType, date-24*60*60).blocks[blockchainType]
+           data = window.ramen_mergeData(data, blockchainType, mapPreviousDay)
         }
 
-        return window.chopsticks_parser(data, blockchainType, date)
+        return window.ramen_parser(data, blockchainType, date)
       }
 
 
-      window.chopsticks_init = function(blockchainType, blockchainName){
+      window.ramen_init = function(blockchainType, blockchainName){
         var cal = new CalHeatMap();
         var now = new Date()
         var start = moment.utc().unix()*1000-(11*60*60*1000)
@@ -469,7 +468,7 @@
             if (xhr.status === 200) {
 
               try{
-                window.chopsticks_cals[blockchainType].destroy()
+                window.ramen_cals[blockchainType].destroy()
               }
               catch(e){}
 
@@ -501,7 +500,7 @@
                 range: 12,
                 start: new Date(start),
                 data: JSON.parse(xhr.responseText).blocks[blockchainType],
-                afterLoadData: (data) =>  window.chopsticks_loadChain(data, blockchainType, today/1000, start/1000),
+                afterLoadData: (data) =>  window.ramen_loadChain(data, blockchainType, today/1000, start/1000),
                 itemSelector: '#'+blockchainType+'-heatmap',
                 previousSelector: '#'+blockchainType+'-previous',
                 nextSelector: '#'+blockchainType+'-next',
@@ -511,9 +510,9 @@
                 		max: "#ff8d41",
                 		base: "#404040",
                 },
-                onClick: (date, value) => window.chopsticks_onCellClick(date, value, blockchainType),
-                afterLoadPreviousDomain: (data) => window.chopsticks_backward(data, blockchainType),
-                afterLoadNextDomain: (data) => window.chopsticks_forward(data, blockchainType)
+                onClick: (date, value) => window.ramen_onCellClick(date, value, blockchainType),
+                afterLoadPreviousDomain: (data) => window.ramen_backward(data, blockchainType),
+                afterLoadNextDomain: (data) => window.ramen_forward(data, blockchainType)
               });
 
               cal.removeLegend();
@@ -523,16 +522,20 @@
 
         xhr.send(null);
 
-        window.chopsticks_cals[blockchainType] = cal
-        window.chopsticks_mins[blockchainType] = today/1000
-        window.chopsticks_maxs[blockchainType] = (today/1000)+(24*60*60)
-      }
+        window.ramen_cals[blockchainType] = cal
+        window.ramen_mins[blockchainType] = today/1000
+        window.ramen_maxs[blockchainType] = (today/1000)+(24*60*60)
+     }
 
-      // init blockchains panels
-     window.chopsticks_init("XBC", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>ABC')
-     window.chopsticks_init("XBS", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>SV')
-     window.chopsticks_init("XBU", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>Unlimited' )
-     window.chopsticks_init("XBN", 'Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>NayBC')
+     // init blockchains panels
+     window.ramen_BLOCKCHAINS = ["XBC", "XBS", "XBU", "XBN"]
+     window.ramen_BLOCKCHAINS_NAMES = ["Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>ABC",
+                              "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>SV",
+                              "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>Unlimited",
+                              "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>NayBC"]
+
+     for (var i=0; i< window.ramen_BLOCKCHAINS.length; i++)
+        window.ramen_init(window.ramen_BLOCKCHAINS[i], window.ramen_BLOCKCHAINS_NAMES[i])
 
      $('#donate').click(function(){
        $('#donateModal').modal('show')
@@ -544,15 +547,15 @@
 
      /*setInterval(
       function(){
-        window.chopsticks_cals["XBC"].destroy()
-        window.chopsticks_cals["XBS"].destroy()
-        window.chopsticks_cals["XBU"].destroy()
-        window.chopsticks_cals["XBN"].destroy()
+        window.ramen_cals["XBC"].destroy()
+        window.ramen_cals["XBS"].destroy()
+        window.ramen_cals["XBU"].destroy()
+        window.ramen_cals["XBN"].destroy()
 
-        window.chopsticks_init("XBC")
-        window.chopsticks_init("XBS")
-        window.chopsticks_init("XBU")
-        window.chopsticks_init("XBN")
+        window.ramen_init("XBC")
+        window.ramen_init("XBS")
+        window.ramen_init("XBU")
+        window.ramen_init("XBN")
       },10000)*/
 
     })();
