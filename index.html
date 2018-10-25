@@ -456,11 +456,15 @@
 
         // order data
         data = window.ramen_mergeData(data, blockchainType, {})
+        var dataKeys = Object.keys(data)
 
-        // if view is not full (no blocks at 30mins), get previous day
-        if (parseInt(Object.keys(data)[0]) > 30*60+start){
+        // if view is not full (no blocks at 5mins), get previous day
+        if (parseInt(dataKeys[0]) > 5*60+start){
            var mapPreviousDay = window.ramen_getBlocks(blockchainType, date-24*60*60).blocks[blockchainType]
            data = window.ramen_mergeData(data, blockchainType, mapPreviousDay)
+        } else if (parseInt(dataKeys[dataKeys.length-1]) < ((12*60)-5)*60+start){
+          var mapNextDay = window.ramen_getBlocks(blockchainType, date+24*60*60).blocks[blockchainType]
+          data = window.ramen_mergeData(data, blockchainType, mapNextDay)
         }
 
         return window.ramen_parser(data, blockchainType, date)
