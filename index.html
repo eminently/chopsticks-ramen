@@ -247,11 +247,11 @@
         var blocks = window.ramen_blockchains[blockchainType][keys[0]]
         keys = Object.keys(blocks)
 
-
         var block = null
 
         for (var i=0; i<keys.length; i++){
             if (parseInt(date) - 60 <= parseInt(keys[i])
+                && parseInt(keys[i]) <= parseInt(date) + 60
                 && (blocks[keys[i]].ecmh_simple_value == value))
                 block = blocks[keys[i]]
         }
@@ -324,6 +324,8 @@
 
           var b = blocks[keys[i]]
 
+          if (b == null) continue
+
           if (i % 2 == 0) {
             body +=
             '<tr>'
@@ -344,6 +346,7 @@
             body +=
             '</tr>'
           }
+
         }
 
         body +=
@@ -461,11 +464,17 @@
         // if view is not full (no blocks at 5mins), get previous day
         if (parseInt(dataKeys[0]) > 5*60+start){
           var mapPreviousDay = window.ramen_getBlocks(blockchainType, date-24*60*60)
-          if (mapPreviousDay != null) data = window.ramen_mergeData(data, blockchainType, mapPreviousDay.blocks[blockchainType])
+          if (mapPreviousDay != null && Object.keys(mapPreviousDay) != 0
+              && mapPreviousDay.blocks != null && mapPreviousDay.blocks[blockchainType] != null
+              && Object.keys(mapPreviousDay.blocks) != 0 )
+              data = window.ramen_mergeData(data, blockchainType, mapPreviousDay.blocks[blockchainType])
 
         } else if (parseInt(dataKeys[dataKeys.length-1]) < ((12*60)-5)*60+start){
           var mapNextDay = window.ramen_getBlocks(blockchainType, date+24*60*60)
-          if (mapNextDay != null) data = window.ramen_mergeData(data, blockchainType, mapNextDay.blocks[blockchainType])
+          if (mapNextDay != null && Object.keys(mapNextDay) != 0
+              && mapNextDay.blocks != null && mapNextDay.blocks[blockchainType] != null
+              && Object.keys(mapNextDay.blocks) != 0 )
+              data = window.ramen_mergeData(data, blockchainType, mapNextDay.blocks[blockchainType])
         }
 
         return window.ramen_parser(data, blockchainType, date)
