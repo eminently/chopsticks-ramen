@@ -11,6 +11,16 @@
 -->
 <html lang="en">
 <head>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-129298354-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-129298354-1');
+  </script>
+
   <meta charset="UTF-8">
   <title>Forks monitor powered by chopsticks.cash</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -30,6 +40,8 @@
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
   <script type="text/javascript" src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/cferdinandi/saferInnerHTML@1.0/dist/saferInnerHTML.polyfills.min.js"></script>
+
+
 
   <style>
     .btn-close, .btn-close:active, .btn-close:visited, .btn-close:focus {
@@ -145,7 +157,6 @@
    <div id="chain-XBC" class="chain"><br/><br/><br/><br/> <h3 style="margin-left:50px;"> loading chains <span style="color: #7ED321">...</span> <i style="color: #7ED321" class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>  <br/><br/><br/><br/> </h3></div>
    <div id="chain-XBS" class="chain"></div>
    <div id="chain-XBU" class="chain"></div>
-   <div id="chain-XBN" class="chain"></div>
 
    <div style="height:25px"></div>
 
@@ -181,6 +192,7 @@
       window.ramen_mins = {}
       window.ramen_maxs = {}
       window.ramen_blockchains = {}
+      window.chopsticks_bchfork = 556766
 
       window.ramen_parser = function(data, blockchainType,timestamp) {
 
@@ -192,10 +204,13 @@
 
       	var stats = {};
         var statsKeys = [];
+        var totalSinceFork = 0;
         //data = data.blocks[blockchainType]
       	for (var d in data) {
 
           if (window.ramen_blockchains[blockchainType]["height"] < data[d].height){
+
+            totalSinceFork += data[d].transactions_nb
 
             window.ramen_blockchains[blockchainType]["height"] = data[d].height
             window.ramen_blockchains[blockchainType]["ecmh_simple_value"] = data[d].ecmh_simple_value
@@ -209,7 +224,7 @@
                 '<li>Height: '+  window.ramen_blockchains[blockchainType]["height"]+'</li>' +
                 //'<li>ECHM (short): '+  window.ramen_blockchains[blockchainType]["ecmh_simple_value"]+'</li>' +
                 '<li>Timestamp: '+  window.ramen_blockchains[blockchainType]["timestamp"]+'</li>' +
-                '<li>Transactions (nb): '+  window.ramen_blockchains[blockchainType]["transactions_nb"]+'</li>' +
+                '<li>Transactions today: '+  Math.floor(totalSinceFork/1000) +'k</li>' +
               '</ul>'
 
             saferInnerHTML(app, template);
@@ -481,14 +496,16 @@
       }
 
 
-      window.ramen_init = function(blockchainType, blockchainName){
+      window.ramen_init = function(blockchainType, blockchainName, time){
         var cal = new CalHeatMap();
         var now = new Date()
         var start = moment.utc().unix()*1000-(11*60*60*1000)
         var today = moment.utc([now.getFullYear(), now.getMonth(), now.getDate(), 0]);
 
+        var loadTime = time != null ? time : today/1000
+
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-"+(today/1000)+".json", true);
+        xhr.open('GET', "https://s3.amazonaws.com/chopsticks.cash/data/heatmap/"+blockchainType+"-"+loadTime+".json", true);
         xhr.onload = function () {
           if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -513,7 +530,7 @@
                     '<div id="'+blockchainType+'-heatmap"></div>'+
                   '</td>'+
                   '<td>'+
-                    '<br/>Last block<br/>'+
+                    '<br/>Stats<br/>'+
                     '<div id="'+blockchainType+'-lastblock"></div>'+
                   '</td>'+
                 '</tr>'+
@@ -542,7 +559,11 @@
               });
 
               cal.removeLegend();
+            } else {
+              // try previous day
+              window.ramen_init(blockchainType, blockchainName, (today/1000)-24*60*60)
             }
+
           }
         };
 
@@ -554,11 +575,10 @@
      }
 
      // init blockchains panels
-     window.ramen_BLOCKCHAINS = ["XBC", "XBS", "XBU", "XBN"]
+     window.ramen_BLOCKCHAINS = ["XBC", "XBS", "XBU"]
      window.ramen_BLOCKCHAINS_NAMES = ["Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>ABC",
                               "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>SV",
-                              "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>Unlimited",
-                              "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>NayBC"]
+                              "Bitcoin&nbsp;&nbsp;&nbsp;&nbsp;<br/>Unlimited"]
 
      for (var i=0; i< window.ramen_BLOCKCHAINS.length; i++)
         window.ramen_init(window.ramen_BLOCKCHAINS[i], window.ramen_BLOCKCHAINS_NAMES[i])
@@ -586,6 +606,8 @@
 
     })();
     </script>
+
+
 
     <!-- This line can go anywhere -->
     <script src="https://www.moneybutton.com/moneybutton.js"></script>
